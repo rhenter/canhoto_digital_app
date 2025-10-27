@@ -1,5 +1,7 @@
 # Canhoto Digital — PWA (React + Vite + TypeScript)
 
+Leia em inglês: [README.en.md](README.en.md)
+
 Aplicativo PWA para registro de comprovantes de entrega (POD) integrado a uma API Django. O projeto foi configurado para usar Yarn (Corepack), Vite, Tailwind CSS, autenticação com token em memória, fila offline via IndexedDB e `vite-plugin-pwa` para instalação e cache.
 
 ---
