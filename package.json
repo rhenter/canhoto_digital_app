@@ -1,8 +1,9 @@
 {
-  "name": "${PROJECT_NAME}",
+  "name": "canhoto_digital_app",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "packageManager": "yarn@stable",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
