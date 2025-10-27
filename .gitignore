@@ -95,5 +95,9 @@ Pipfile.*
 *.tfstate
 *.tfstate.*
 
+# PWA env files
+canhoto-pwa/.env
+canhoto-pwa/.env.*
+!canhoto-pwa/.env.local.example
 
 .output.txt
