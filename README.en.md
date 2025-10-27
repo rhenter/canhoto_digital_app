@@ -43,10 +43,10 @@ Enable Corepack (once per machine):
 corepack enable
 ```
 
-Optional: pin Yarn (Berry) version locally in the project:
+Project Yarn version: `yarn@4.4.1`
+Activate it locally (once per machine):
 ```bash
-cd canhoto-pwa
-yarn set version stable
+corepack prepare yarn@4.4.1 --activate
 ```
 
 ---

@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "packageManager": "yarn@stable",
+  "packageManager": "yarn@4.4.1",
+  "workspaces": [
+    "canhoto-pwa"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

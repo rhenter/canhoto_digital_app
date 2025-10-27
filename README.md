@@ -45,10 +45,10 @@ Habilite o Corepack (uma única vez por máquina):
 corepack enable
 ```
 
-Opcional: padronizar a versão do Yarn (Berry) no projeto localmente:
+Versão do Yarn padronizada no projeto: `yarn@4.4.1`
+Ative-a localmente (uma vez por máquina):
 ```bash
-cd canhoto-pwa
-yarn set version stable
+corepack prepare yarn@4.4.1 --activate
 ```
 
 ---
