@@ -101,3 +101,16 @@ canhoto-pwa/.env.*
 !canhoto-pwa/.env.local.example
 
 .output.txt
+
+# Yarn Berry (Yarn 2+/4) — keep essential subfolders, ignore the rest
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+# If you are NOT using Zero-Installs, keep this ignore; if you are, comment it out to commit the cache
+#.yarn/cache
+
+# Yarn PnP artifacts (usually not committed)
+.pnp.*

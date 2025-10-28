@@ -1,3 +1,4 @@
+/// <reference types="node" />
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -9,6 +10,7 @@ export default ({ mode }: { mode: string }) => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
+        devOptions: { enabled: true },
         includeAssets: ['favicon.svg','robots.txt','apple-touch-icon.png'],
         manifest: {
           name: 'Canhoto Digital',

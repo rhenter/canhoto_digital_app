@@ -1,14 +1,54 @@
 {
   "name": "canhoto_digital_app",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Monorepo do Canhoto Digital (PWA + API).",
+  "private": true,
   "packageManager": "yarn@4.4.1",
   "workspaces": [
     "canhoto-pwa"
   ],
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "engines": {
+    "node": ">=18.18 <23"
   },
-  "private": true
+  "scripts": {
+    "dev": "yarn workspace canhoto-pwa dev",
+    "build": "yarn workspace canhoto-pwa build",
+    "preview": "yarn workspace canhoto-pwa preview",
+
+    "typecheck": "yarn workspace canhoto-pwa typecheck || true",
+    "lint": "yarn workspace canhoto-pwa lint || true",
+    "lint:fix": "yarn workspace canhoto-pwa lint:fix || true",
+    "format": "yarn workspace canhoto-pwa format || true",
+    "format:check": "yarn workspace canhoto-pwa format:check || true",
+    "test": "yarn workspace canhoto-pwa test",
+    "test:watch": "yarn workspace canhoto-pwa test:watch",
+    "test:coverage": "yarn workspace canhoto-pwa test:coverage",
+
+    "check": "yarn lint && yarn typecheck && yarn test -s",
+    "clean": "git clean -fdX -e '!/.yarn' -e '!/.yarn/**' && find . -name 'node_modules' -prune -exec rm -rf {} + || true",
+    "dep:dedupe": "yarn dedupe --strategy highest",
+    "dep:audit": "yarn npm audit --recursive || true",
+
+    "prepare": "husky install",
+    "postinstall": "echo \"✅ Instalação concluída com Yarn 4\""
+  },
+  "devDependencies": {
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "yarn workspace canhoto-pwa lint:fix",
+      "yarn workspace canhoto-pwa typecheck --noEmit --pretty false",
+      "yarn workspace canhoto-pwa test -s --bail --findRelatedTests",
+      "git add"
+    ],
+    "*.{json,md,css,scss}": [
+      "yarn workspace canhoto-pwa format",
+      "git add"
+    ]
+  },
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  }
 }
