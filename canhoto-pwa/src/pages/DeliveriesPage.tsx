@@ -23,18 +23,20 @@ export default function DeliveriesPage() {
       <h1 className="text-xl font-semibold">{t('deliveries:title')}</h1>
       <ul className="space-y-2">
         {data?.map((d) => (
-          <li key={d.id} className="card flex items-center justify-between">
-            <div>
-              <p className="font-medium">{d.code}</p>
-              <p className="text-sm text-gray-600">{d.recipient_expected}</p>
-              <p className="text-xs text-gray-500">{d.address}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="rounded bg-gray-100 px-2 py-1 text-xs capitalize text-gray-700">{d.status}</span>
-              {d.status !== 'delivered' && (
-                <Link to={`/deliveries/${d.id}/pod`} className="btn">{t('deliveries:register_pod')}</Link>
-              )}
-            </div>
+          <li key={d.id} className="card hover:bg-gray-50">
+            <Link to={`/deliveries/${d.id}`} className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">{d.invoice.number}/{d.invoice.series}</p>
+                <p className="text-sm text-gray-600">{d.invoice.recipient_name}</p>
+                <p className="text-xs text-gray-500">{d.invoice.recipient_address_street}</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-gray-100 px-2 py-1 text-xs capitalize text-gray-700">{d.status}</span>
+                <svg className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </Link>
           </li>
         ))}
       </ul>
