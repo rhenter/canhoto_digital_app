@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import SignatureCanvas from 'react-signature-canvas'
 import imageCompression from 'browser-image-compression'
-import { presignUploads, uploadToPresigned, createPod } from '../lib/api'
+import { uploadPodMultipart } from '../lib/api'
 import { enqueuePOD, processQueue } from '../lib/offlineQueue'
 
 export default function PodPage() {
@@ -15,7 +15,8 @@ export default function PodPage() {
   const [receivedByName, setReceivedByName] = useState('')
   const [receivedByDoc, setReceivedByDoc] = useState('')
   const [note, setNote] = useState('')
-  const [imageDataUrl, setImageDataUrl] = useState<string | undefined>()
+  const [photoFiles, setPhotoFiles] = useState<File[]>([])
+  const [photoPreviews, setPhotoPreviews] = useState<string[]>([])
   const [signatureDataUrl, setSignatureDataUrl] = useState<string | undefined>()
   const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -33,13 +34,28 @@ export default function PodPage() {
   }, [])
 
   const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+    const files = Array.from(e.target.files || [])
+    if (!files.length) return
     try {
-      const compressed = await imageCompression(file, { maxSizeMB: 0.6, maxWidthOrHeight: 1920 })
-      const reader = new FileReader()
-      reader.onload = () => setImageDataUrl(reader.result as string)
-      reader.readAsDataURL(compressed)
+      const compressedPromises = files.map((file) => imageCompression(file, { maxSizeMB: 0.9, maxWidthOrHeight: 1920 }))
+      const compressed = await Promise.all(compressedPromises)
+      setPhotoFiles(compressed as File[])
+      // Generate previews
+      const previews: string[] = []
+      await Promise.all(
+        compressed.map(
+          (f) =>
+            new Promise<void>((resolve) => {
+              const reader = new FileReader()
+              reader.onload = () => {
+                previews.push(reader.result as string)
+                resolve()
+              }
+              reader.readAsDataURL(f)
+            })
+        )
+      )
+      setPhotoPreviews(previews)
     } catch (err) {
       console.error(err)
     }
@@ -64,46 +80,37 @@ export default function PodPage() {
 
     try {
       if (navigator.onLine) {
-        // Prepare filenames
-        const files: string[] = ['signature.png']
-        if (imageDataUrl) files.push('photo.jpg')
+        // Build multipart form
+        const form = new FormData()
+        form.append('received_by_name', receivedByName)
+        if (receivedByDoc) form.append('received_by_document', receivedByDoc)
+        form.append('signed_at', new Date().toISOString())
+        if (geo?.lat != null) form.append('geo_lat', String(geo.lat))
+        if (geo?.lng != null) form.append('geo_lng', String(geo.lng))
+        form.append('meta', JSON.stringify({ note: note || undefined, ua: navigator.userAgent }))
 
-        // Request presigned URLs
-        const { uploads } = await presignUploads(Number(id), files)
-        const byName = Object.fromEntries(uploads.map(u => [u.filename, u]))
-
-        // Upload files
+        // Append signature file
         const signatureBlob = dataURLtoBlob(signatureDataUrl)
-        const signatureUrl = await uploadToPresigned(byName['signature.png'], signatureBlob)
-        let photoUrl: string | undefined
-        if (imageDataUrl) {
-          const photoBlob = dataURLtoBlob(imageDataUrl)
-          photoUrl = await uploadToPresigned(byName['photo.jpg'], photoBlob)
-        }
+        form.append('signature_image', signatureBlob, 'signature.png')
 
-        // Create POD entry
-        const payload = {
-          received_by_name: receivedByName,
-          received_by_document: receivedByDoc || undefined,
-          signed_at: new Date().toISOString(),
-          geo_lat: geo?.lat ?? null,
-          geo_lng: geo?.lng ?? null,
-          signature_image: signatureUrl,
-          photos: photoUrl ? [photoUrl] : [],
-          meta: { note: note || undefined, ua: navigator.userAgent }
-        }
+        // Append optional multiple photos
+        photoFiles.forEach((file, idx) => {
+          // Backend accepts 'photos' or 'photos[]'; we'll use 'photos[]'
+          form.append('photos[]', file, file.name || `photo_${idx + 1}.jpg`)
+        })
 
-        await createPod(Number(id), payload)
-        // Process any queued items too
+        await uploadPodMultipart(id, form)
+        // Process any queued items too (best effort)
         processQueue().catch(() => {})
       } else {
-        await enqueuePOD(Number(id), {
+        // Offline: enqueue for later processing (keeps data URLs)
+        await enqueuePOD(id, {
           received_by_name: receivedByName,
           received_by_document: receivedByDoc || undefined,
           signed_at: new Date().toISOString(),
           geo: geo ?? undefined,
           note: note || undefined,
-          image: imageDataUrl,
+          images: photoPreviews,
           signature: signatureDataUrl,
         })
       }
@@ -112,13 +119,13 @@ export default function PodPage() {
     } catch (e: any) {
       setError(e?.message ?? t('errors:pod_submit_failed'))
       // Enqueue on fail for later processing
-      await enqueuePOD(Number(id), {
+      await enqueuePOD(id, {
         received_by_name: receivedByName,
         received_by_document: receivedByDoc || undefined,
         signed_at: new Date().toISOString(),
         geo: geo ?? undefined,
         note: note || undefined,
-        image: imageDataUrl,
+        images: photoPreviews,
         signature: signatureDataUrl,
       })
       navigate('/')
@@ -147,9 +154,13 @@ export default function PodPage() {
         </div>
         <div>
           <label className="mb-1 block text-sm">{t('pod:photo')}</label>
-          <input type="file" accept="image/*" onChange={handleImageChange} />
-          {imageDataUrl && (
-            <img src={imageDataUrl} alt="Preview" className="mt-2 max-h-60 rounded border" />
+          <input type="file" accept="image/*" multiple onChange={handleImageChange} />
+          {!!photoPreviews.length && (
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {photoPreviews.map((src, i) => (
+                <img key={i} src={src} alt={`Preview ${i + 1}`} className="max-h-40 rounded border object-cover" />
+              ))}
+            </div>
           )}
         </div>
         <div>
