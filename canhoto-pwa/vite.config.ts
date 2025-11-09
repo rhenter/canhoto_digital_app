@@ -12,6 +12,9 @@ export default ({ mode }: { mode: string }) => {
         registerType: 'autoUpdate',
         devOptions: { enabled: true },
         includeAssets: ['favicon.svg','robots.txt','apple-touch-icon.png'],
+        strategies: 'injectManifest',
+        srcDir: 'src',
+        filename: 'sw.ts',
         manifest: {
           name: 'Canhoto Digital',
           short_name: 'Canhoto',
@@ -23,12 +26,6 @@ export default ({ mode }: { mode: string }) => {
             { src: '/pwa-192.png', sizes: '192x192', type: 'image/png' },
             { src: '/pwa-512.png', sizes: '512x512', type: 'image/png' },
             { src: '/pwa-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
-          ],
-        },
-        workbox: {
-          runtimeCaching: [
-            { urlPattern: ({ url }) => url.origin === self.location.origin, handler: 'CacheFirst', options: { cacheName: 'static-assets' } },
-            { urlPattern: ({ url }) => url.pathname.startsWith('/api/'), handler: 'NetworkOnly' },
           ],
         },
       }),
