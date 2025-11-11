@@ -1,6 +1,7 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useIsFetching } from '@tanstack/react-query'
 import { logout, isAuthenticated, getUser, subscribeAuth, User } from './lib/auth'
 import { getPendingCount, subscribeQueue, processQueue, ensureBackgroundSync } from './lib/offlineQueue'
 
@@ -8,6 +9,8 @@ export default function AppLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const { t } = useTranslation(['app', 'common'])
+  // Global fetching indicator (any React Query in-flight)
+  const isFetchingAny = useIsFetching()
 
   // Pending PODs indicator
   const [pending, setPending] = useState(0)
@@ -84,6 +87,15 @@ export default function AppLayout() {
         <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
           <Link to="/" className="font-semibold text-brand">{t('app:appName')}</Link>
           <div className="relative ml-auto flex items-center gap-4 text-sm">
+            {isFetchingAny ? (
+              <div className="inline-flex items-center gap-2 text-gray-500" aria-live="polite" aria-busy="true">
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" strokeWidth="4" opacity="0.25"/>
+                  <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4" fill="none"/>
+                </svg>
+                <span className="sr-only">{t('common:refreshing', { defaultValue: 'Atualizando...' })}</span>
+              </div>
+            ) : null}
             {pending > 0 && (
               <div className="flex items-center gap-2 rounded-full border bg-amber-50 px-2 py-1 text-amber-700">
                 <span className="inline-flex items-center gap-1">
