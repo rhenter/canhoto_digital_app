@@ -13,11 +13,12 @@
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
-    "types": ["vite/client", "node"],
+    "types": ["vite/client"],
     "paths": {
       "@lib/*": ["src/lib/*"],
       "@pages/*": ["src/pages/*"]
     }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": ["src"],
+  "exclude": ["vite.config.ts"]
 }

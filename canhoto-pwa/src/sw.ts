@@ -1,5 +1,8 @@
 /// <reference lib="webworker" />
 
+// Ensure correct typing for service worker global scope
+declare const self: ServiceWorkerGlobalScope & typeof globalThis
+
 import { clientsClaim } from 'workbox-core'
 import { precacheAndRoute } from 'workbox-precaching'
 
