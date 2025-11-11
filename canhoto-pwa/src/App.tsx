@@ -12,6 +12,28 @@ export default function AppLayout() {
   // Global fetching indicator (any React Query in-flight)
   const isFetchingAny = useIsFetching()
 
+  // Smooth top bar show/hide (avoid flicker on very quick requests)
+  const [showBar, setShowBar] = useState(false)
+  const showTimer = useRef<number | null>(null)
+  const hideTimer = useRef<number | null>(null)
+  useEffect(() => {
+    if (isFetchingAny > 0) {
+      if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null }
+      if (!showBar && !showTimer.current) {
+        showTimer.current = window.setTimeout(() => { setShowBar(true); showTimer.current = null }, 150)
+      }
+    } else {
+      if (showTimer.current) { clearTimeout(showTimer.current); showTimer.current = null }
+      if (showBar && !hideTimer.current) {
+        hideTimer.current = window.setTimeout(() => { setShowBar(false); hideTimer.current = null }, 200)
+      }
+    }
+    return () => {
+      if (showTimer.current) { clearTimeout(showTimer.current); showTimer.current = null }
+      if (hideTimer.current) { clearTimeout(hideTimer.current); hideTimer.current = null }
+    }
+  }, [isFetchingAny, showBar])
+
   // Pending PODs indicator
   const [pending, setPending] = useState(0)
   useEffect(() => {
@@ -83,19 +105,36 @@ export default function AppLayout() {
 
   return (
     <div className="app-container">
-      <header className="sticky top-0 z-10 border-b bg-white/80 backdrop-blur">
+      <header className="sticky top-0 z-10 border bg-white/80 backdrop-blur relative">
+        {/* Top indeterminate progress bar */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5">
+          <div className="h-full w-full overflow-hidden bg-transparent">
+            {showBar && (
+              <div className="relative h-full text-brand" aria-hidden="true">
+                <div className="absolute inset-0 bg-gray-200/60" />
+                <div className="progress-bar-shimmer absolute left-[-40%] top-0 h-full w-[40%]" />
+              </div>
+            )}
+          </div>
+        </div>
+        {/* SR-only live region for accessibility */}
+        {isFetchingAny ? (
+          <span className="sr-only" aria-live="polite">{t('common:refreshing', { defaultValue: 'Atualizando...' })}</span>
+        ) : null}
+        <style>{`
+          .progress-bar-shimmer {
+            background: linear-gradient(90deg, rgba(59,130,246,0) 0%, rgba(59,130,246,0.9) 50%, rgba(59,130,246,0) 100%);
+            animation: progressSlide 1.1s ease-in-out infinite;
+          }
+          @keyframes progressSlide {
+            0% { transform: translateX(0); }
+            50% { transform: translateX(60vw); }
+            100% { transform: translateX(100vw); }
+          }
+        `}</style>
         <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
           <Link to="/" className="font-semibold text-brand">{t('app:appName')}</Link>
           <div className="relative ml-auto flex items-center gap-4 text-sm">
-            {isFetchingAny ? (
-              <div className="inline-flex items-center gap-2 text-gray-500" aria-live="polite" aria-busy="true">
-                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" strokeWidth="4" opacity="0.25"/>
-                  <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4" fill="none"/>
-                </svg>
-                <span className="sr-only">{t('common:refreshing', { defaultValue: 'Atualizando...' })}</span>
-              </div>
-            ) : null}
             {pending > 0 && (
               <div className="flex items-center gap-2 rounded-full border bg-amber-50 px-2 py-1 text-amber-700">
                 <span className="inline-flex items-center gap-1">
