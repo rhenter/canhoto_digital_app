@@ -5,9 +5,12 @@ import { fetchDeliveries, type Delivery } from '../lib/api'
 
 export default function DeliveriesPage() {
   const { t } = useTranslation(['deliveries', 'common'])
-  const { data, isLoading, isError, refetch } = useQuery<Delivery[]>({
+  const { data, isLoading, isError, refetch, isFetching } = useQuery<Delivery[]>({
     queryKey: ['deliveries'],
     queryFn: fetchDeliveries,
+    refetchInterval: 30000, // auto-polling every 30s
+    refetchOnWindowFocus: true,
+    refetchOnReconnect: true,
   })
 
   if (isLoading) return <div>{t('deliveries:loading')}</div>
@@ -20,7 +23,28 @@ export default function DeliveriesPage() {
 
   return (
     <div className="space-y-3">
-      <h1 className="text-xl font-semibold">{t('deliveries:title')}</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-semibold">{t('deliveries:title')}</h1>
+        <button
+          className="inline-flex items-center gap-2 rounded border bg-white px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
+          onClick={() => refetch()}
+          disabled={isFetching || !navigator.onLine}
+          aria-busy={isFetching}
+          title={!navigator.onLine ? t('common:offline', { defaultValue: 'Offline' }) : t('common:refresh', { defaultValue: 'Atualizar' })}
+        >
+          {isFetching ? (
+            <>
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" strokeWidth="4" opacity="0.25"/><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4" fill="none"/></svg>
+              <span>{t('common:refreshing', { defaultValue: 'Atualizando...' })}</span>
+            </>
+          ) : (
+            <>
+              <svg className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path d="M2.9 10a7.1 7.1 0 111.5 4.4l1.1-.8A5.6 5.6 0 1010 4.4v1.9L6.9 3l3.1-3v1.9A7.1 7.1 0 012.9 10z"/></svg>
+              <span>{t('common:refresh', { defaultValue: 'Atualizar' })}</span>
+            </>
+          )}
+        </button>
+      </div>
       <ul className="space-y-2">
         {data?.map((d) => (
           <li key={d.id} className="card hover:bg-gray-50">
