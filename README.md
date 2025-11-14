@@ -239,4 +239,3 @@ Isso garante que o `yarn.lock` está sincronizado com `package.json`.
 
 ## Licença
 Defina aqui a licença do projeto (ex.: MIT, Proprietária, etc.).
-# canhoto_digital_app
