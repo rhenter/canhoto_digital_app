@@ -5,6 +5,36 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useTranslation } from 'react-i18next'
 import i18n from '../i18n'
 import { getUser, setUser, User, mapPreferredLanguage } from '../lib/auth'
+import { updateUserPreferences, UpdateUserPreferencesPayload } from '../lib/api'
+
+// Friendly date-time formatter for ISO strings
+const formatDateTime = (iso: string | null | undefined, locale: string) => {
+  if (!iso) return '-'
+  const d = new Date(iso)
+  if (isNaN(d.getTime())) return String(iso)
+  try {
+    return new Intl.DateTimeFormat(locale || 'pt-br', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(d)
+  } catch {
+    return d.toLocaleString()
+  }
+}
+
+// Normalize language code to backend expected codes
+// Backend rejects 'pt'; use 'pt-br'. Keep others lowercase as-is.
+const toBackendPreferredLanguage = (code: string) => {
+  const c = (code || '').toLowerCase()
+  switch (c) {
+    case 'pt':
+    case 'pt-br':
+    case 'pt_br':
+      return 'pt-br'
+    default:
+      return c
+  }
+}
 
 const schema = z.object({
   id: z.number(),
@@ -46,17 +76,32 @@ export default function PreferencesPage() {
     setSuccess(null)
     setError(null)
     try {
-      // TODO: integrate with backend to update user profile
-      await new Promise((r) => setTimeout(r, 400))
-      setUser(values as unknown as User)
+      const payload: UpdateUserPreferencesPayload = {
+        name: values.name,
+        username: values.username,
+        first_name: values.first_name,
+        last_name: values.last_name,
+        cellphone: values.cellphone ?? null,
+        email: values.email,
+        allow_email_notifications: values.allow_email_notifications,
+        allow_push_notifications: values.allow_push_notifications,
+        allow_sms_notifications: values.allow_sms_notifications,
+        allow_whatsapp_notifications: values.allow_whatsapp_notifications,
+        preferred_language: toBackendPreferredLanguage(values.preferred_language),
+      }
+      const resp = await updateUserPreferences(values.id, payload)
+      const updated = (resp && typeof resp === 'object' && 'id' in resp)
+        ? (resp as any)
+        : ({ ...(getUser() as any), ...values })
+      setUser(updated as unknown as User)
       // Change language immediately if updated
-      if (values.preferred_language) {
-        const lang = mapPreferredLanguage(values.preferred_language)
+      if (updated.preferred_language) {
+        const lang = mapPreferredLanguage(updated.preferred_language)
         if (i18n.language !== lang) await i18n.changeLanguage(lang)
       }
       setSuccess(t('common:saved', { defaultValue: 'Salvo.' }))
       // Reset form to clear dirty state
-      reset(values)
+      reset(updated as any)
     } catch (e) {
       setError(t('errors.generic', { defaultValue: 'Algo deu errado. Tente novamente.' }))
     }
@@ -74,7 +119,7 @@ export default function PreferencesPage() {
       <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <div className="md:col-span-1">
           <label className="mb-1 block text-sm">ID</label>
-          <input type="number" className="input" {...register('id', { valueAsNumber: true })} readOnly />
+          <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-gray-700 text-sm">{String(user.id)}</div>
         </div>
         <div className="md:col-span-1">
           <label className="mb-1 block text-sm">{t('common:name', { defaultValue: 'Nome' })}</label>
@@ -107,7 +152,7 @@ export default function PreferencesPage() {
         <div className="md:col-span-2">
           <label className="mb-1 block text-sm">{t('common:language', { defaultValue: 'Idioma preferido' })}</label>
           <select className="input" {...register('preferred_language')}>
-            <option value="pt">Português</option>
+            <option value="pt-br">Português</option>
             <option value="en">English</option>
             <option value="es">Español</option>
           </select>
@@ -135,15 +180,21 @@ export default function PreferencesPage() {
 
         <div className="md:col-span-1">
           <label className="mb-1 block text-sm">Superuser</label>
-          <input className="input" value={String(user.is_superuser)} readOnly />
+          <div className={`inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium ${user.is_superuser ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>
+            <span className={`h-2 w-2 rounded-full ${user.is_superuser ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+            {user.is_superuser ? 'Yes' : 'No'}
+          </div>
         </div>
         <div className="md:col-span-1">
           <label className="mb-1 block text-sm">{t('common:status', { defaultValue: 'Ativo' })}</label>
-          <input className="input" value={String(user.is_active)} readOnly />
+          <div className={`inline-flex items-center gap-2 rounded-md px-2 py-1 text-sm font-medium ${user.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+            <span className={`h-2 w-2 rounded-full ${user.is_active ? 'bg-green-500' : 'bg-red-500'}`}></span>
+            {user.is_active ? t('common:active', { defaultValue: 'Active' }) : t('common:inactive', { defaultValue: 'Inactive' })}
+          </div>
         </div>
         <div className="md:col-span-2">
           <label className="mb-1 block text-sm">Last login</label>
-          <input className="input" value={user.last_login ?? '-'} readOnly />
+          <div className="rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-gray-700 text-sm" title={user.last_login ?? undefined}>{formatDateTime(user.last_login, i18n.language)}</div>
         </div>
 
         <div className="md:col-span-2 mt-2">
