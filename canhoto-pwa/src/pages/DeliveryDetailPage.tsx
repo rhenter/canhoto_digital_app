@@ -42,7 +42,7 @@ export default function DeliveryDetailPage() {
           {t('deliveries:detail_title', { defaultValue: 'Entrega' })} {d.invoice.number}/{d.invoice.series}
         </h1>
         <div className="flex items-center gap-2">
-          <span className="rounded bg-gray-100 px-2 py-1 text-xs capitalize text-gray-700">{d.status}</span>
+          <span className="rounded bg-gray-100 px-2 py-1 text-xs capitalize text-gray-700">{d.status_display}</span>
           <button
             className="inline-flex items-center gap-2 rounded border bg-white px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
             onClick={() => refetch()}
