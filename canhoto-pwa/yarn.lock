@@ -2938,9 +2938,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"canhoto-pwa@workspace:canhoto-pwa":
+"canhoto-pwa@workspace:.":
   version: 0.0.0-use.local
-  resolution: "canhoto-pwa@workspace:canhoto-pwa"
+  resolution: "canhoto-pwa@workspace:."
   dependencies:
     "@eslint/js": "npm:^9.13.0"
     "@hookform/resolvers": "npm:^3.9.0"
@@ -2988,15 +2988,6 @@ __metadata:
     vite-plugin-pwa: "npm:^0.20.5"
     vitest: "npm:^2.1.4"
     zod: "npm:^3.23.8"
-  languageName: unknown
-  linkType: soft
-
-"canhoto_digital_app@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "canhoto_digital_app@workspace:."
-  dependencies:
-    husky: "npm:^9.1.6"
-    lint-staged: "npm:^15.2.10"
   languageName: unknown
   linkType: soft
 
