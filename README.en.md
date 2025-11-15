@@ -236,7 +236,12 @@ This ensures `yarn.lock` is in sync with `package.json`.
 ---
 
 ## License
-Define the project license here (e.g., MIT, Proprietary, etc.).
+This project is licensed under the BSD 3-Clause License. See [LICENSE](LICENSE) for the full text.
+
+Summary:
+- You may use, modify, and distribute, with or without modifications, including commercially.
+- You must retain the copyright notice and license terms.
+- You may not use the names of the authors or contributors to endorse or promote products derived from this software without prior written permission.
 
 ---
 
