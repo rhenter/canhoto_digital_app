@@ -114,3 +114,6 @@ canhoto-pwa/.env.*
 
 # Yarn PnP artifacts (usually not committed)
 .pnp.*
+
+tsconfig.tsbuildinfo
+*/tsconfig.tsbuildinfo
