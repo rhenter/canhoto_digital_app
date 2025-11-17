@@ -38,7 +38,7 @@ export default function AppLayout() {
   const [pending, setPending] = useState(0)
   useEffect(() => {
     let mounted = true
-    getPendingCount().then((n) => { if (mounted) setPending(n) })
+    getPendingCount().then((n: number) => { if (mounted) setPending(n) })
     const unsub = subscribeQueue(async () => {
       const n = await getPendingCount()
       setPending(n)

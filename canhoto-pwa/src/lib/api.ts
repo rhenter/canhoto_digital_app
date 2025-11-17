@@ -1,5 +1,6 @@
 import axios from 'axios'
 import type { AxiosError } from 'axios'
+import type { ReactNode } from 'react'
 import i18n from '../i18n'
 import { getAccessToken, refreshAccessToken, setAccessToken, logout } from './auth'
 import { endpoints } from './endpoints'
@@ -92,7 +93,7 @@ export interface Invoice {
 }
 
 export interface Delivery {
-  status_display: ReactI18NextChildren | Iterable<ReactI18NextChildren>
+  status_display: ReactNode
   id: string // UUID
   code: string
   status: 'pending' | 'delivered' | 'failed' | 'partial' | 'rejected'
