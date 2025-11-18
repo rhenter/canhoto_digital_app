@@ -265,8 +265,8 @@ export default function AppLayout() {
                 )}
               </div>
             ) : (
-              <span className="text-gray-500">{location.pathname}</span>
-            )}
+                <span className="text-gray-500 dark:text-gray-300">{location.pathname}</span>
+              )}
           </div>
         </div>
       </header>
