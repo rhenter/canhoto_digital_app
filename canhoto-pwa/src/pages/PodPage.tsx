@@ -23,6 +23,7 @@ export default function PodPage() {
     const [geo, setGeo] = useState<{ lat: number; lng: number } | null>(null)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [error, setError] = useState<string | null>(null)
+    const [success, setSuccess] = useState(false)
 
     useEffect(() => {
         // Attempt to prefetch geolocation (best effort)
@@ -162,11 +163,11 @@ export default function PodPage() {
                 })
             }
 
-            navigate('/')
+            setSuccess(true)
         } catch (e: any) {
             setError(e?.message ?? t('errors:pod_submit_failed'))
             // Enqueue on fail for later processing
-          await enqueuePOD(id, {
+            await enqueuePOD(id, {
               status,
               observations: observations || undefined,
               received_by_name: receivedByName || undefined,
@@ -175,8 +176,8 @@ export default function PodPage() {
               location: (geo?.lng != null && geo?.lat != null) ? [geo.lng, geo.lat] : undefined,
               images: photoPreviews,
               signature: signatureDataUrl,
-          })
-            navigate('/')
+            })
+            setSuccess(true)
         } finally {
             setIsSubmitting(false)
         }
@@ -185,69 +186,91 @@ export default function PodPage() {
     return (
         <div className="space-y-4">
             <h1 className="text-xl font-semibold">{t('pod:title')}</h1>
-            <div className="card space-y-4">
-                <div>
-                    <label className="mb-1 block text-sm">{t('pod:status')}</label>
+
+            {success && (
+                <div className="card">
+                    <div className="flex items-start gap-3">
+                        <div className="mt-1 text-green-500">✅</div>
+                        <div>
+                            <p className="font-medium">{t('pod:success', { defaultValue: 'Entrega registrada com sucesso!' })}</p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <button className="btn" onClick={() => navigate('/')}>{t('pod:back_to_list', { defaultValue: 'Voltar à lista' })}</button>
+                                <button className="btn-gray" onClick={() => navigate(`/deliveries/${id}`)}>{t('pod:view_pdf', { defaultValue: 'Visualizar comprovante PDF' })}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {!success && (
+              <>
+                <div className="card space-y-4">
+                    <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('pod:section_status', { defaultValue: 'Status da entrega' })}</h2>
                     <select className="input" value={status} onChange={(e) => setStatus(e.target.value as any)}>
                         <option value="delivered">{t('pod:status_delivered')}</option>
                         <option value="partial">{t('pod:status_partial')}</option>
                         <option value="failed">{t('pod:status_failed')}</option>
                     </select>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                    <div>
-                        <label className="mb-1 block text-sm">{t('pod:received_by_name')}</label>
-                        <input className="input" value={receivedByName}
-                               onChange={(e) => setReceivedByName(e.target.value)}/>
-                    </div>
-                    <div>
-                        <label className="mb-1 block text-sm">{t('pod:document_optional')}</label>
-                        <input className="input" value={receivedByDoc}
-                               onChange={(e) => setReceivedByDoc(e.target.value)}/>
+
+                <div className="card space-y-3">
+                    <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('pod:section_recipient', { defaultValue: 'Recebido por / Documento' })}</h2>
+                    <div className="grid gap-3 md:grid-cols-2">
+                        <div>
+                            <label className="mb-1 block text-sm">{t('pod:received_by_name')}</label>
+                            <input className="input" value={receivedByName} onChange={(e) => setReceivedByName(e.target.value)}/>
+                        </div>
+                        <div>
+                            <label className="mb-1 block text-sm">{t('pod:document_optional')}</label>
+                            <input className="input" value={receivedByDoc} onChange={(e) => setReceivedByDoc(e.target.value)}/>
+                        </div>
                     </div>
                 </div>
 
-                <div>
-                    <label className="mb-1 block text-sm">{t('pod:observations')}</label>
-                    <textarea className="input min-h-[80px]" value={observations}
-                              onChange={(e) => setObservations(e.target.value)}/>
+                <div className="card space-y-2">
+                    <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('pod:section_observations', { defaultValue: 'Observações' })}</h2>
+                    <textarea className="input min-h-[80px]" value={observations} onChange={(e) => setObservations(e.target.value)}/>
                 </div>
-                <div>
-                    <label className="mb-1 block text-sm">{t('pod:photo')}</label>
-                    <input type="file" accept="image/*" multiple onChange={handleImageChange}/>
-                    {!!photoPreviews.length && (
-                        <div className="mt-2 grid grid-cols-3 gap-2">
-                            {photoPreviews.map((src, i) => (
-                                <img key={i} src={src} alt={`Preview ${i + 1}`}
-                                     className="max-h-40 rounded border object-cover"/>
-                            ))}
+
+                <div className="card">
+                    <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">{t('pod:section_photo', { defaultValue: 'Foto' })}</h2>
+                    <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                            <input className="input" type="file" accept="image/*" multiple capture="environment" onChange={handleImageChange}/>
                         </div>
-                    )}
+                        {!!photoPreviews.length && (
+                            <div className="grid grid-cols-3 gap-2">
+                                {photoPreviews.map((src, i) => (
+                                    <img key={i} src={src} alt={`Preview ${i + 1}`} className="max-h-40 rounded border object-cover"/>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
-                <div>
-                    <label className="mb-1 block text-sm">{t('pod:signature')}</label>
-                    <div className="rounded border">
-                        <SignatureCanvas ref={sigRef} penColor="#111827"
-                                         canvasProps={{width: 500, height: 200, className: 'bg-white'}}/>
+
+                <div className="card">
+                    <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-200">{t('pod:section_signature', { defaultValue: 'Assinatura' })}</h2>
+                    <div className="rounded border dark:border-gray-700">
+                        <SignatureCanvas ref={sigRef} penColor="#e5e7eb" // gray-200 stroke on dark bg
+                                         canvasProps={{width: 500, height: 200, className: 'bg-white dark:bg-gray-900 w-full'}}/>
                     </div>
                     <div className="mt-2 flex gap-2">
-                        <button className="btn" type="button" onClick={saveSignature}>{t('pod:save_signature')}</button>
-                        <button className="btn" type="button" onClick={clearSignature}>{t('pod:clear')}</button>
+                        <button className="btn" type="button" onClick={saveSignature}>💾 {t('pod:save_signature', { defaultValue: 'Salvar Assinatura' })}</button>
+                        <button className="btn-danger" type="button" onClick={clearSignature}>🧽 {t('pod:clear', { defaultValue: 'Limpar' })}</button>
                     </div>
-                    {signatureDataUrl &&
-                        <img src={signatureDataUrl} alt="Signature" className="mt-2 max-h-40 rounded border"/>}
+                    {signatureDataUrl && <img src={signatureDataUrl} alt="Signature" className="mt-2 max-h-40 rounded border"/>}
                 </div>
+
                 {geo && (
                     <p className="text-xs text-gray-500">{t('pod:location')}: {geo.lat.toFixed(5)}, {geo.lng.toFixed(5)}</p>
                 )}
                 {error && <p className="text-sm text-red-600">{error}</p>}
                 <div className="flex gap-2">
-                    <button className="btn" onClick={onSubmit}
-                            disabled={isSubmitting}>{isSubmitting ? t('pod:submitting') : t('pod:submit')}</button>
-                    <button className="btn bg-gray-600 hover:bg-gray-700" type="button"
-                            onClick={() => navigate(-1)}>{t('pod:back')}</button>
+                    <button className="btn" onClick={onSubmit} disabled={isSubmitting}>{isSubmitting ? t('pod:submitting') : t('pod:submit')}</button>
+                    <button className="btn-gray" type="button" onClick={() => navigate(-1)}>{t('pod:back')}</button>
                 </div>
-            </div>
+              </>
+            )}
         </div>
     )
 }
