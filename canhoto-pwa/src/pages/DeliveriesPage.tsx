@@ -92,29 +92,49 @@ export default function DeliveriesPage() {
         </button>
       </div>
 
-      <ul className="space-y-2">
-        {list?.map((d) => (
-          <li key={d.id} className="card bg-[#222]/60 text-white hover:bg-[#222]/80">
-            <Link to={`/deliveries/${d.id}`} className="block">
-              <div className="flex items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <p className="text-sm text-gray-300">#{d.code}</p>
-                  <p className="text-lg font-semibold">{d.invoice.recipient_name}</p>
-                  <p className="text-sm text-gray-300">{d.invoice.recipient_address_street}</p>
-                  <p className="text-xs text-gray-400">{d.invoice.number}/{d.invoice.series}</p>
+      {(!list || list.length === 0) ? (
+        <div className="card">
+          <div className="flex items-center gap-2">
+            {isFetching && (
+              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" fill="none" strokeWidth="4" opacity="0.25"/><path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="4" fill="none"/></svg>
+            )}
+            <p>
+              {isFetching
+                ? t('deliveries:loading', { defaultValue: 'Buscando entregas…' })
+                : t('deliveries:empty', { defaultValue: 'Nenhuma entrega para exibir no momento.' })}
+            </p>
+          </div>
+          {!isFetching && (
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {t('deliveries:empty_hint', { defaultValue: 'Assim que houver entregas disponíveis para você, elas aparecerão aqui.' })}
+            </p>
+          )}
+        </div>
+      ) : (
+        <ul className="space-y-2">
+          {list?.map((d) => (
+            <li key={d.id} className="card bg-[#222]/60 text-white hover:bg-[#222]/80">
+              <Link to={`/deliveries/${d.id}`} className="block">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm text-gray-300">#{d.code}</p>
+                    <p className="text-lg font-semibold">{d.invoice.recipient_name}</p>
+                    <p className="text-sm text-gray-300">{d.invoice.recipient_address_street}</p>
+                    <p className="text-xs text-gray-400">{d.invoice.number}/{d.invoice.series}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`${statusClass(d.status)} inline-flex items-center gap-1`}>
+                      <span aria-hidden>{statusEmoji(d.status)}</span>
+                      <span className="capitalize">{d.status_display}</span>
+                    </span>
+                    <div className="mt-2 text-xs text-gray-400">{d.delivery_at ?? d.created_at}</div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className={`${statusClass(d.status)} inline-flex items-center gap-1`}>
-                    <span aria-hidden>{statusEmoji(d.status)}</span>
-                    <span className="capitalize">{d.status_display}</span>
-                  </span>
-                  <div className="mt-2 text-xs text-gray-400">{d.delivery_at ?? d.created_at}</div>
-                </div>
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
 
     </div>
   )
