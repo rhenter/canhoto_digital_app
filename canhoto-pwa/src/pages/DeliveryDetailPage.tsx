@@ -34,6 +34,8 @@ export default function DeliveryDetailPage() {
   }
 
   const d = data
+  const statusClass = (s: Delivery['status']) => s === 'pending' ? 'status-pending' : s === 'delivered' ? 'status-delivered' : 'status-problem'
+  const statusEmoji = (s: Delivery['status']) => s === 'pending' ? '🟠' : s === 'delivered' ? '🟢' : '🔴'
 
   return (
     <div className="space-y-4">
@@ -42,9 +44,12 @@ export default function DeliveryDetailPage() {
           {t('deliveries:detail_title', { defaultValue: 'Entrega' })} {d.invoice.number}/{d.invoice.series}
         </h1>
         <div className="flex items-center gap-2">
-          <span className="rounded bg-gray-100 px-2 py-1 text-xs capitalize text-gray-700">{d.status_display}</span>
+          <span className={`${statusClass(d.status)} inline-flex items-center gap-1 text-sm`}>
+            <span aria-hidden>{statusEmoji(d.status)}</span>
+            <span className="capitalize">{d.status_display}</span>
+          </span>
           <button
-            className="inline-flex items-center gap-2 rounded border bg-white px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
+            className="inline-flex items-center gap-2 rounded border border-gray-300 bg-white px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
             onClick={() => refetch()}
             disabled={isFetching || !navigator.onLine}
             aria-busy={isFetching}
@@ -67,17 +72,17 @@ export default function DeliveryDetailPage() {
 
       <div className="grid gap-3 md:grid-cols-2">
         <div className="card space-y-1">
-          <h2 className="text-sm font-semibold text-gray-700">{t('deliveries:invoice', { defaultValue: 'Nota Fiscal' })}</h2>
-          <p><span className="text-gray-500">{t('deliveries:number', { defaultValue: 'Número' })}:</span> {d.invoice.number}</p>
-          <p><span className="text-gray-500">{t('deliveries:series', { defaultValue: 'Série' })}:</span> {d.invoice.series}</p>
-          <p><span className="text-gray-500">{t('deliveries:issuer', { defaultValue: 'Emitente' })}:</span> {d.invoice.issuer_name}</p>
-          <p><span className="text-gray-500">{t('deliveries:issue_date', { defaultValue: 'Emissão' })}:</span> {d.invoice.issue_date}</p>
-          <p><span className="text-gray-500">{t('deliveries:total_value', { defaultValue: 'Valor total' })}:</span> {d.invoice.total_value}</p>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('deliveries:invoice', { defaultValue: 'Nota Fiscal' })}</h2>
+          <p><span className="text-gray-500 dark:text-gray-400">{t('deliveries:number', { defaultValue: 'Número' })}:</span> {d.invoice.number}</p>
+          <p><span className="text-gray-500 dark:text-gray-400">{t('deliveries:series', { defaultValue: 'Série' })}:</span> {d.invoice.series}</p>
+          <p><span className="text-gray-500 dark:text-gray-400">{t('deliveries:issuer', { defaultValue: 'Emitente' })}:</span> {d.invoice.issuer_name}</p>
+          <p><span className="text-gray-500 dark:text-gray-400">{t('deliveries:issue_date', { defaultValue: 'Emissão' })}:</span> {d.invoice.issue_date}</p>
+          <p><span className="text-gray-500 dark:text-gray-400">{t('deliveries:total_value', { defaultValue: 'Valor total' })}:</span> {d.invoice.total_value}</p>
         </div>
         <div className="card space-y-1">
-          <h2 className="text-sm font-semibold text-gray-700">{t('deliveries:recipient', { defaultValue: 'Destinatário' })}</h2>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('deliveries:recipient', { defaultValue: 'Destinatário' })}</h2>
           <p>{d.invoice.recipient_name}</p>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-600 dark:text-gray-300">
             {d.invoice.recipient_address_street}, {d.invoice.recipient_address_number} - {d.invoice.recipient_address_neighborhood}<br />
             {d.invoice.recipient_address_city}/{d.invoice.recipient_address_uf} • {d.invoice.recipient_address_zip_code}
           </p>
@@ -86,15 +91,15 @@ export default function DeliveryDetailPage() {
 
       {d.observations && (
         <div className="card">
-          <h2 className="text-sm font-semibold text-gray-700">{t('deliveries:observations', { defaultValue: 'Observações' })}</h2>
-          <p className="text-sm text-gray-700">{d.observations}</p>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">{t('deliveries:observations', { defaultValue: 'Observações' })}</h2>
+          <p className="text-sm text-gray-700 dark:text-gray-300">{d.observations}</p>
         </div>
       )}
 
       <div className="flex items-center gap-2">
-        <Link to="/" className="btn bg-gray-600 hover:bg-gray-700">{t('common:back', { defaultValue: 'Voltar' })}</Link>
+        <Link to="/" className="btn-gray">{t('common:back', { defaultValue: 'Voltar' })}</Link>
         {d.status !== 'delivered' && (
-          <Link to={`/deliveries/${d.id}/pod`} className="btn">{t('deliveries:register_pod', { defaultValue: 'Enviar prova' })}</Link>
+          <Link to={`/deliveries/${d.id}/pod`} className="btn">{t('deliveries:register_pod', { defaultValue: 'Registrar POD' })}</Link>
         )}
       </div>
     </div>
