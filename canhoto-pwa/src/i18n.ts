@@ -41,6 +41,8 @@ const resources = {
       loading: 'Loading deliveries…',
       load_error: 'Failed to load deliveries.',
       register_pod: 'Register POD',
+      empty: 'No deliveries to show right now.',
+      empty_hint: 'As soon as there are deliveries available for you, they will appear here.',
     },
     pod: {
       title: 'Register POD',
@@ -108,6 +110,8 @@ const resources = {
       loading: 'Carregando entregas…',
       load_error: 'Erro ao carregar entregas.',
       register_pod: 'Registrar Entrega',
+      empty: 'Nenhuma entrega para exibir no momento.',
+      empty_hint: 'Assim que houver entregas disponíveis para você, elas aparecerão aqui.',
     },
     pod: {
       title: 'Registrar Entrega',
@@ -175,6 +179,8 @@ const resources = {
       loading: 'Cargando entregas…',
       load_error: 'Error al cargar entregas.',
       register_pod: 'Registrar Entrega',
+      empty: 'No hay entregas para mostrar en este momento.',
+      empty_hint: 'Tan pronto como haya entregas disponibles para ti, aparecerán aquí.',
     },
     pod: {
       title: 'Registrar Entrega',
