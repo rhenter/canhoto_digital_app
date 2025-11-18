@@ -99,7 +99,7 @@ export default function DeliveryDetailPage() {
       <div className="flex items-center gap-2">
         <Link to="/" className="btn-gray">{t('common:back', { defaultValue: 'Voltar' })}</Link>
         {d.status !== 'delivered' && (
-          <Link to={`/deliveries/${d.id}/pod`} className="btn">{t('deliveries:register_pod', { defaultValue: 'Registrar POD' })}</Link>
+          <Link to={`/deliveries/${d.id}/pod`} className="btn">{t('deliveries:register_pod', { defaultValue: 'Registrar Entrega' })}</Link>
         )}
       </div>
     </div>
