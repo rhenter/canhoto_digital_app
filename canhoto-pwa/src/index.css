@@ -5,7 +5,14 @@
 html, body, #root { height: 100%; }
 
 /* Basic layout helpers */
-.app-container { @apply min-h-full bg-gray-50 text-gray-900; }
+.app-container { @apply min-h-full bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100; }
 .btn { @apply inline-flex items-center justify-center rounded-md bg-brand px-4 py-2 text-white hover:bg-sky-600 disabled:opacity-50; }
-.input { @apply w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand; }
-.card { @apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm; }
+.btn-gray { @apply inline-flex items-center justify-center rounded-md bg-gray-600 px-4 py-2 text-white hover:bg-gray-700 disabled:opacity-50; }
+.btn-danger { @apply inline-flex items-center justify-center rounded-md bg-red-600 px-3 py-2 text-white hover:bg-red-700 disabled:opacity-50; }
+.input { @apply w-full rounded-md border border-gray-300 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand dark:border-gray-700 dark:bg-gray-800; }
+.card { @apply rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-800; }
+.badge { @apply inline-flex items-center rounded-full px-2 py-1 text-xs font-medium; }
+.status-pending { @apply badge bg-amber-200 text-amber-900 dark:bg-amber-400/20 dark:text-amber-300; }
+.status-delivered { @apply badge bg-emerald-200 text-emerald-900 dark:bg-emerald-400/20 dark:text-emerald-300; }
+.status-problem { @apply badge bg-red-200 text-red-900 dark:bg-red-400/20 dark:text-red-300; }
+.fab { @apply fixed bottom-5 right-5 inline-flex h-14 w-14 items-center justify-center rounded-full bg-brand text-white shadow-lg hover:bg-sky-600; }

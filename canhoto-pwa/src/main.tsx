@@ -8,6 +8,20 @@ import i18n from './i18n'
 import { routes } from './routes'
 import { processQueue, getPendingCount, ensureBackgroundSync } from './lib/offlineQueue'
 
+// Initialize theme from saved preference or system; default to dark
+try {
+  const saved = localStorage.getItem('theme') // 'dark' | 'light' | null
+  const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+  if (saved === 'dark' || (!saved && prefersDark)) {
+    document.documentElement.classList.add('dark')
+  } else if (saved === 'light') {
+    document.documentElement.classList.remove('dark')
+  } else {
+    // Default to dark if no preference and system not dark
+    document.documentElement.classList.add('dark')
+  }
+} catch {}
+
 const router = createBrowserRouter(routes)
 const queryClient = new QueryClient()
 

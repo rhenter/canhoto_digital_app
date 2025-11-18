@@ -53,6 +53,22 @@ export default function AppLayout() {
   const menuRef = useRef<HTMLDivElement | null>(null)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
 
+  // Theme state (sync with <html> class)
+  const [theme, setTheme] = useState<'light' | 'dark'>(
+    typeof document !== 'undefined' && document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+  )
+  const toggleTheme = () => {
+    setTheme((prev) => {
+      const next = prev === 'dark' ? 'light' : 'dark'
+      try {
+        if (next === 'dark') document.documentElement.classList.add('dark')
+        else document.documentElement.classList.remove('dark')
+        localStorage.setItem('theme', next)
+      } catch {}
+      return next
+    })
+  }
+
   useEffect(() => {
     const unsub = subscribeAuth(() => {
       setAuthed(isAuthenticated())
@@ -105,13 +121,13 @@ export default function AppLayout() {
 
   return (
     <div className="app-container">
-      <header className="sticky top-0 z-10 border bg-white/80 backdrop-blur relative">
+      <header className="sticky top-0 z-10 border border-gray-200 bg-white/80 backdrop-blur relative dark:border-gray-800 dark:bg-gray-900/80">
         {/* Top indeterminate progress bar */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-0.5">
           <div className="h-full w-full overflow-hidden bg-transparent">
             {showBar && (
               <div className="relative h-full text-brand" aria-hidden="true">
-                <div className="absolute inset-0 bg-gray-200/60" />
+                <div className="absolute inset-0 bg-gray-200/60 dark:bg-gray-700/60" />
                 <div className="progress-bar-shimmer absolute left-[-40%] top-0 h-full w-[40%]" />
               </div>
             )}
@@ -133,10 +149,33 @@ export default function AppLayout() {
           }
         `}</style>
         <div className="mx-auto flex max-w-5xl items-center justify-between p-4">
-          <Link to="/" className="font-semibold text-brand">{t('app:appName')}</Link>
+          <Link to="/" className="flex items-center gap-2 font-semibold text-brand">
+            <img src="/logo.png" alt={t('app:appName')} className="h-7 w-7 rounded" />
+            <span>{t('app:appName')}</span>
+          </Link>
           <div className="relative ml-auto flex items-center gap-4 text-sm">
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white p-2 text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700"
+              aria-label={t('app:toggleTheme', { defaultValue: 'Alternar tema' })}
+              title={theme === 'dark' ? (t('app:switchToLight', { defaultValue: 'Usar tema claro' }) as string) : (t('app:switchToDark', { defaultValue: 'Usar tema escuro' }) as string)}
+            >
+              {theme === 'dark' ? (
+                // Sun icon
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M12 4.5a1 1 0 0 0 1-1V2a1 1 0 1 0-2 0v1.5a1 1 0 0 0 1 1zm0 15a1 1 0 0 0-1 1V22a1 1 0 1 0 2 0v-1.5a1 1 0 0 0-1-1zM4.5 12a1 1 0 0 0-1-1H2a1 1 0 1 0 0 2h1.5a1 1 0 0 0 1-1zm15 0a1 1 0 0 0 1-1H22a1 1 0 1 0 0 2h-1.5a1 1 0 0 0-1-1zM5.64 5.64a1 1 0 0 0 1.41 0l1.06-1.06a1 1 0 1 0-1.41-1.41L5.64 4.23a1 1 0 0 0 0 1.41zm10.25 10.25a1 1 0 0 0 1.41 0l1.06-1.06a1 1 0 1 0-1.41-1.41l-1.06 1.06a1 1 0 0 0 0 1.41zM4.23 18.36a1 1 0 0 0 1.41 0l1.06-1.06a1 1 0 1 0-1.41-1.41L4.23 16.95a1 1 0 0 0 0 1.41zm13.73-13.72a1 1 0 0 0 1.41 0l.01-.01a1 1 0 0 0 0-1.41L18.32 2.16a1 1 0 1 0-1.41 1.41l1.05 1.06zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10z"/>
+                </svg>
+              ) : (
+                // Moon icon
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M21 12.79A9 9 0 0 1 11.21 3a7 7 0 1 0 9.79 9.79z"/>
+                </svg>
+              )}
+            </button>
+
             {pending > 0 && (
-              <div className="flex items-center gap-2 rounded-full border bg-amber-50 px-2 py-1 text-amber-700">
+              <div className="flex items-center gap-2 rounded-full border bg-amber-50 px-2 py-1 text-amber-700 dark:border-amber-400/30 dark:bg-amber-400/10 dark:text-amber-300">
                 <span className="inline-flex items-center gap-1">
                   <span className="inline-flex h-2 w-2 rounded-full bg-amber-500" aria-hidden />
                   PODs pendentes: <strong>{pending}</strong>
@@ -154,7 +193,7 @@ export default function AppLayout() {
                 <button
                   id="user-menu-button"
                   ref={buttonRef}
-                  className="flex items-center gap-2 rounded-full border bg-white px-2 py-1 shadow-sm hover:bg-gray-50"
+                  className="flex items-center gap-2 rounded-full border bg-white px-2 py-1 shadow-sm hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-200"
                   onClick={() => setOpen((v) => !v)}
                   aria-haspopup="menu"
                   aria-expanded={open}
@@ -175,10 +214,10 @@ export default function AppLayout() {
                     {/* Avatar initials fallback (as FontAwesome-like user) */}
                     <span className="font-semibold">{initials}</span>
                   </div>
-                  <span className="hidden md:block max-w-[160px] truncate text-gray-700">
+                  <span className="hidden md:block max-w-[160px] truncate text-gray-700 dark:text-gray-200">
                     {user?.first_name || user?.username}
                   </span>
-                  <svg className="h-4 w-4 text-gray-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <svg className="h-4 w-4 text-gray-500 dark:text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fillRule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z" clipRule="evenodd" />
                   </svg>
                 </button>
@@ -186,7 +225,7 @@ export default function AppLayout() {
                   <div
                     id="user-menu"
                     ref={menuRef}
-                    className="absolute right-0 mt-2 w-56 overflow-hidden rounded-md border bg-white py-1 shadow-lg"
+                    className="absolute right-0 mt-2 w-56 overflow-hidden rounded-md border bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
                     role="menu"
                     aria-labelledby="user-menu-button"
                     onKeyDown={(e) => {
@@ -208,17 +247,17 @@ export default function AppLayout() {
                     }}
                   >
                     <div className="px-4 py-2">
-                      <p className="truncate text-sm font-medium text-gray-900">{user?.name || user?.username}</p>
-                      {user?.email && <p className="truncate text-xs text-gray-500">{user.email}</p>}
+                      <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">{user?.name || user?.username}</p>
+                      {user?.email && <p className="truncate text-xs text-gray-500 dark:text-gray-400">{user.email}</p>}
                     </div>
-                    <div className="my-1 border-t" />
-                    <Link to="/account/preferences" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none" role="menuitem" onClick={() => setOpen(false)} tabIndex={0}>
+                    <div className="my-1 border-t dark:border-gray-700" />
+                    <Link to="/account/preferences" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none dark:text-gray-200 dark:hover:bg-gray-700 dark:focus:bg-gray-700" role="menuitem" onClick={() => setOpen(false)} tabIndex={0}>
                       {t('app:userPreferences', { defaultValue: 'Preferências' })}
                     </Link>
                     <Link to="/account/change-password" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none" role="menuitem" onClick={() => setOpen(false)} tabIndex={0}>
                       {t('app:changePassword', { defaultValue: 'Alterar senha' })}
                     </Link>
-                    <div className="my-1 border-t" />
+                    <div className="my-1 border-t dark:border-gray-700" />
                     <button className="block w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 focus:bg-red-50 focus:outline-none" role="menuitem" onClick={handleLogout} tabIndex={0}>
                       {t('app:logout', { defaultValue: 'Sair' })}
                     </button>
