@@ -40,19 +40,19 @@ export default function LoginPage() {
   return (
     <div className="mx-auto mt-16 max-w-md">
       <div className="card">
-        <h1 className="mb-4 text-xl font-semibold">{t('auth:login')}</h1>
+        <h1 className="mb-4 text-xl font-semibold text-gray-900 dark:text-gray-100">{t('auth:login')}</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
           <div>
-            <label className="mb-1 block text-sm">{t('auth:username')}</label>
-            <input className="input" {...register('username')} />
-            {errors.username && <p className="text-sm text-red-600">{errors.username.message}</p>}
+            <label className="mb-1 block text-sm text-gray-700 dark:text-gray-200">{t('auth:username')}</label>
+            <input className="input text-gray-900 placeholder-gray-400 dark:text-gray-100 dark:placeholder-gray-500" {...register('username')} />
+            {errors.username && <p className="text-sm text-red-600 dark:text-red-400">{errors.username.message}</p>}
           </div>
           <div>
-            <label className="mb-1 block text-sm">{t('auth:password')}</label>
-            <input type="password" className="input" {...register('password')} />
-            {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
+            <label className="mb-1 block text-sm text-gray-700 dark:text-gray-200">{t('auth:password')}</label>
+            <input type="password" className="input text-gray-900 placeholder-gray-400 dark:text-gray-100 dark:placeholder-gray-500" {...register('password')} />
+            {errors.password && <p className="text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>}
           </div>
-          {error && <p className="text-sm text-red-600">{error}</p>}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           <button className="btn w-full" disabled={isSubmitting}>
             {isSubmitting ? t('auth:signingIn') : t('auth:signIn')}
           </button>
