@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
@@ -8,10 +9,34 @@ export default function DeliveriesPage() {
   const { data, isLoading, isError, refetch, isFetching } = useQuery<Delivery[]>({
     queryKey: ['deliveries'],
     queryFn: fetchDeliveries,
-    refetchInterval: 30000, // auto-polling every 30s
+    refetchInterval: 30000,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   })
+
+  const [q, setQ] = useState('')
+  const [filter, setFilter] = useState<'pending' | 'delivered' | 'all'>('pending')
+
+  const list = useMemo(() => {
+    const items = (data ?? [])
+      .filter((d) => filter === 'all' ? true : filter === 'pending' ? d.status === 'pending' : d.status === 'delivered')
+      .filter((d) => {
+        if (!q.trim()) return true
+        const hay = [
+          d.invoice.recipient_name,
+          d.invoice.number,
+          d.invoice.series,
+          d.invoice.recipient_address_street,
+          d.invoice.recipient_address_city,
+          d.invoice.recipient_address_uf,
+        ].join(' ').toLowerCase()
+        return hay.includes(q.toLowerCase())
+      })
+    return items
+  }, [data, q, filter])
+
+  const statusClass = (s: Delivery['status']) => s === 'pending' ? 'status-pending' : s === 'delivered' ? 'status-delivered' : 'status-problem'
+  const statusEmoji = (s: Delivery['status']) => s === 'pending' ? '🟠' : s === 'delivered' ? '🟢' : '🔴'
 
   if (isLoading) return <div>{t('deliveries:loading')}</div>
   if (isError) return (
@@ -22,11 +47,32 @@ export default function DeliveriesPage() {
   )
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{t('deliveries:title')}</h1>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <input
+            className="input"
+            placeholder={t('deliveries:search_placeholder', { defaultValue: 'Buscar por cliente, número ou endereço' }) as string}
+            value={q}
+            onChange={(e) => setQ(e.target.value)}
+            aria-label="Buscar"
+          />
+        </div>
+        <div>
+          <select
+            className="input"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value as any)}
+            aria-label="Filtro de status"
+            title="Filtro de status"
+          >
+            <option value="pending">Pendentes</option>
+            <option value="delivered">Entregues</option>
+            <option value="all">Todos</option>
+          </select>
+        </div>
         <button
-          className="inline-flex items-center gap-2 rounded border bg-white px-3 py-1 text-sm hover:bg-gray-50 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm hover:bg-gray-50 disabled:opacity-50 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700"
           onClick={() => refetch()}
           disabled={isFetching || !navigator.onLine}
           aria-busy={isFetching}
@@ -45,25 +91,31 @@ export default function DeliveriesPage() {
           )}
         </button>
       </div>
+
       <ul className="space-y-2">
-        {data?.map((d) => (
-          <li key={d.id} className="card hover:bg-gray-50">
-            <Link to={`/deliveries/${d.id}`} className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{d.invoice.number}/{d.invoice.series}</p>
-                <p className="text-sm text-gray-600">{d.invoice.recipient_name}</p>
-                <p className="text-xs text-gray-500">{d.invoice.recipient_address_street}</p>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-gray-100 px-2 py-1 text-xs capitalize text-gray-700">{d.status_display}</span>
-                <svg className="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 111.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                </svg>
+        {list?.map((d) => (
+          <li key={d.id} className="card bg-[#222]/60 text-white hover:bg-[#222]/80">
+            <Link to={`/deliveries/${d.id}`} className="block">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="text-sm text-gray-300">#{d.code}</p>
+                  <p className="text-lg font-semibold">{d.invoice.recipient_name}</p>
+                  <p className="text-sm text-gray-300">{d.invoice.recipient_address_street}</p>
+                  <p className="text-xs text-gray-400">{d.invoice.number}/{d.invoice.series}</p>
+                </div>
+                <div className="text-right">
+                  <span className={`${statusClass(d.status)} inline-flex items-center gap-1`}>
+                    <span aria-hidden>{statusEmoji(d.status)}</span>
+                    <span className="capitalize">{d.status_display}</span>
+                  </span>
+                  <div className="mt-2 text-xs text-gray-400">{d.delivery_at ?? d.created_at}</div>
+                </div>
               </div>
             </Link>
           </li>
         ))}
       </ul>
+
     </div>
   )
 }
